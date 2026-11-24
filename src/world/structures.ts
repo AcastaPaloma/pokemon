@@ -2,10 +2,12 @@
 // merged, painted geometry in the shared vertex format (render/geo.ts) together
 // with the colliders, walkable platforms and anchors the game needs.
 //
-// Conventions: local space, origin on the ground at the structure's centre,
-// +Y up, +Z front, metres. Box colliders and platforms use `rot` in the same
-// sense as three.js `rotation.y` (and world/colliders.ts). Deterministic for
-// (kind, seed, opts); no DOM, no caching — safe to call from a worker.
+// Conventions: local space, origin on the ground at the structure's centre
+// (the pier alone starts at its shore end and runs out along +Z), +Y up, +Z
+// front, metres. Bridges and stairs run along X; gates span X and are crossed
+// along Z. Box colliders and platforms use `rot` in the same sense as three.js
+// `rotation.y` (and world/colliders.ts). Wind phase (sway.y) is 0..1.
+// Deterministic for (kind, seed, opts); no DOM, no caching — safe in a worker.
 import * as THREE from 'three';
 import { hashStr } from '../core/math';
 import type { StructureBuild, StructureKind, StructureOpts } from './structureTypes';

@@ -9,7 +9,7 @@ import { PAL, beam, beamPath, pole, prism, rope, lathe, type Geo, type Kit, type
 // ---------------------------------------------------------------- drum bridge
 
 export function drumBridge(k: Kit) {
-  const span = k.spanOr(14, 6, 40);
+  const span = k.spanOr(14, 6, 72);
   const half = span / 2;
   const rise = span * 0.16;
   const HZ = 1.5;
@@ -21,7 +21,7 @@ export function drumBridge(k: Kit) {
   const g: Geo[] = [];
 
   // deck: short planks laid tangent to the parabola, top faces on the curve
-  const n = clamp(Math.round(span / 0.36), 16, 56);
+  const n = clamp(Math.round(span / 0.36), 16, 62);
   const dx = span / n;
   for (let i = 0; i < n; i++) {
     const xm = -half + dx * (i + 0.5);
@@ -83,7 +83,8 @@ export function drumBridge(k: Kit) {
   k.add(k.moss(merge(ab), 0.3 + k.age * 0.6, { foot: 0, minNy: 0.3 }));
 
   k.arc(0, 0, half, HZ, 0, rise);
-  const segs = 8;
+  // rail colliders step up the arch in short runs so each stays close to its stretch of deck
+  const segs = clamp(Math.round(span / 2.2), 8, 24);
   for (let i = 0; i < segs; i++) {
     const xa = -half + (span * i) / segs;
     const xb = xa + span / segs;
@@ -141,11 +142,13 @@ export function plankBridge(k: Kit) {
 // ---------------------------------------------------------------- pier
 
 export function pier(k: Kit) {
+  // The one kind whose origin is not its centre: it sits at the shore end and the
+  // jetty runs out 10 m toward +Z, so it can be dropped straight on a shoreline.
   const L = 10;
   const W = 2;
   const Y = 0.6;
-  const z0 = -L / 2;
-  const z1 = L / 2;
+  const z0 = 0;
+  const z1 = L;
   const rampLen = 1.4;
   const zs = z0 + rampLen;
   const wood = k.wood(INK.cedar);

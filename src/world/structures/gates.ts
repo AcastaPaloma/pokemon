@@ -23,7 +23,9 @@ function toriiCore(k: Kit, s: number, stone: boolean, grand: boolean) {
   for (const sx of [1, -1]) {
     parts.push(cyl(r1, r0, H, body, seg, { r: [0, 0, sx * lean], t: [sx * px, 0, 0] }));
     // stone drum footing, and the black-lacquered skirt of a painted gate
-    footing.push(prism(r0 * 1.7, r0 * 1.9, 0.2 * s + 0.35, INK.stoneDark, grand ? 10 : 8, { t: [sx * px, -0.35, 0] }));
+    // the grand gate may stand in the shallows, so its footings go deep
+    const sink = grand ? 3 : 0.35;
+    footing.push(prism(r0 * 1.7, r0 * 1.9, 0.2 * s + sink, INK.stoneDark, grand ? 10 : 8, { t: [sx * px, -sink, 0] }));
     if (!stone) parts.push(cyl(r0 * 1.12, r0 * 1.16, 0.42 * s, PAL.sumi, seg, { r: [0, 0, sx * lean], t: [sx * px, 0.2 * s, 0] }));
   }
 
@@ -69,7 +71,7 @@ function toriiCore(k: Kit, s: number, stone: boolean, grand: boolean) {
     for (const sx of [1, -1]) {
       for (const sz of [1, -1]) {
         parts.push(cyl(r0 * 0.55, r0 * 0.62, hs, body, 8, { t: [sx * px, 0, sz * zo] }));
-        footing.push(prism(r0 * 1.05, r0 * 1.2, 0.5, INK.stoneDark, 8, { t: [sx * px, -0.35, sz * zo] }));
+        footing.push(prism(r0 * 1.05, r0 * 1.2, 0.15 + 3, INK.stoneDark, 8, { t: [sx * px, -3, sz * zo] }));
         parts.push(gableRoof({ len: 1.0, hz: 0.6, y: hs - 0.05, rise: 0.34, thick: 0.08, color: INK.rooftile, ridge: PAL.tileDark, infill: body, at: [sx * px, 0, sz * zo] }));
       }
       for (const yy of [hs * 0.42, hs * 0.84]) {
