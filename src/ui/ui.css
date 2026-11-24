@@ -121,6 +121,20 @@
 
 /* ======================================================================== HUD */
 
+/* after dark the HUD is brushed in pale ink on a dark halo */
+#hud.night {
+  --washi: #1b1e2c;
+  --sumi: #f1e7d4;
+  --sumi-faint: rgba(241, 231, 212, 0.45);
+}
+#hud.night .hanko,
+#hud.night .toast .hanko {
+  color: #f4e9d6;
+}
+#hud.night .well .num {
+  color: #f4e9d6;
+}
+
 #hud .vital {
   position: absolute;
   left: 44px;

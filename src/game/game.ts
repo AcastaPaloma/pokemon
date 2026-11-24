@@ -218,14 +218,21 @@ export class Game {
   private assignSeals() {
     const free = [...ALTARS];
     const lines = SPECIES_LIST.filter((sp) => sp.awakening).sort((a, b) => a.id.localeCompare(b.id));
-    // starters keep their seals close to home so the first awakening is findable
-    lines.sort((a, b) => (a.rarity === 5 ? 1 : 0) - (b.rarity === 5 ? 1 : 0));
+    // the spring-born choose first so a first awakening is findable near home;
+    // the mythic take whatever far corner is left
+    const rank = (sp: SpeciesDef) => (SPECIES[sp.line]?.starter ? 0 : sp.rarity === 5 ? 2 : 1);
+    lines.sort((a, b) => rank(a) - rank(b));
     for (const sp of lines) {
-      const first = SPECIES[sp.line];
-      const habitats: string[] = [...sp.ecology.habitats, ...(first ? first.ecology.habitats : [])];
-      let i = free.findIndex((a) => habitats.includes(a.biome));
-      if (i < 0) i = 0;
       if (!free.length) break;
+      const first = SPECIES[sp.line];
+      // where the line begins counts before where it ends up
+      const habitats: string[] = [...(first ? first.ecology.habitats : []), ...sp.ecology.habitats];
+      let i = -1;
+      for (const hb of habitats) {
+        i = free.findIndex((a) => a.biome === hb);
+        if (i >= 0) break;
+      }
+      if (i < 0) i = 0;
       const altar = free.splice(i, 1)[0];
       this.sealAt.set(sp.awakening!.seal, { altar, line: sp.line, sp });
     }

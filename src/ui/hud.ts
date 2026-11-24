@@ -163,6 +163,11 @@ export class Hud {
     const a = g.active;
     const on = (g.mode === 'play' || g.mode === 'menu') && !!a;
     this.root.classList.toggle('on', on && g.mode === 'play');
+    const night = g.sky.night > 0.55;
+    if (this.cache.night !== (night ? 1 : 0)) {
+      this.cache.night = night ? 1 : 0;
+      this.root.classList.toggle('night', night);
+    }
     if (!on || !a) return;
 
     // ---- vitals
