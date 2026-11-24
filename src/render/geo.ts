@@ -158,7 +158,19 @@ export function blob(r: number, color: C, detail = 1, lump = 0.18, seed = 1, o?:
     const f = 1 + (k - Math.floor(k) - 0.5) * 2 * lump;
     p.setXYZ(i, x * f, y * f, z * f);
   }
-  base.computeVertexNormals();
+  // smooth normals from the centre so the cel shading reads as one soft mass
+  // (facet normals would ink every triangle)
+  const nrm = new Float32Array(p.count * 3);
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i);
+    const y = p.getY(i);
+    const z = p.getZ(i);
+    const l = Math.hypot(x, y, z) || 1;
+    nrm[i * 3] = x / l;
+    nrm[i * 3 + 1] = y / l;
+    nrm[i * 3 + 2] = z / l;
+  }
+  base.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
   const g = paint(base, color, sway);
   return o ? xf(g, o) : g;
 }
