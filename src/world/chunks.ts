@@ -52,7 +52,7 @@ export interface Atlas {
 
 export class ChunkManager {
   readonly group = new THREE.Group();
-  readonly terrainMat = makeInkMaterial({ outline: 1, shadeInk: 0.06 });
+  readonly terrainMat = makeInkMaterial({ outline: 1, shadeInk: 0.06, blobs: true });
   readonly floraMat = makeInkMaterial({ wind: true, edgeId: 0.35, shadeInk: 0.2, outline: 1 });
   atlas: Atlas | null = null;
   onAtlas: ((a: Atlas) => void) | null = null;

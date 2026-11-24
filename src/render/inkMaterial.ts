@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { WIND_GLSL, windUniforms } from '../world/wind';
 
 export const MAX_GLOWS = 6;
+export const MAX_BLOBS = 12;
 
 /** Uniforms shared (by reference) across every ink material. */
 export const inkGlobals = {
@@ -23,7 +24,21 @@ export const inkGlobals = {
   /** warm light pools: xyz + radius */
   uGlows: { value: Array.from({ length: MAX_GLOWS }, () => new THREE.Vector4(0, -999, 0, 0)) },
   uSnow: { value: 0 },
+  /** contact shadows under creatures: x, z, radius, feet y */
+  uBlobs: { value: Array.from({ length: MAX_BLOBS }, () => new THREE.Vector4(0, 0, 0, -9999)) },
 };
+
+let blobCursor = 0;
+/** Clear last frame's contact shadows. Call once per frame before creatures update. */
+export function resetBlobs() {
+  for (let i = blobCursor; i < MAX_BLOBS; i++) inkGlobals.uBlobs.value[i].z = 0;
+  blobCursor = 0;
+}
+/** A soft dotted shadow directly under a body, so small feet read as planted. */
+export function addBlob(x: number, z: number, radius: number, feetY: number) {
+  if (blobCursor >= MAX_BLOBS) return;
+  inkGlobals.uBlobs.value[blobCursor++].set(x, z, radius, feetY);
+}
 
 const VERT = /* glsl */ `
 #include <common>
@@ -138,6 +153,7 @@ uniform vec3 uTint;
 uniform float uDissolve;
 uniform float uEmissive;
 uniform float uTerrain;
+uniform vec4 uBlobs[${MAX_BLOBS}];
 ${INK_SHADING_GLSL}
 
 float hash3(vec3 p) {
@@ -167,6 +183,18 @@ void main() {
   float ndl = dot(n, uSunDir);
   float sh = getShadowMask();
   float light = min(ndl * 0.5 + 0.5, mix(0.28, 1.0, sh));
+  #ifdef BLOBS
+    for (int i = 0; i < ${MAX_BLOBS}; i++) {
+      vec4 bl = uBlobs[i];
+      if (bl.z <= 0.0) continue;
+      float lift = max(0.0, bl.w - vWorldPos.y);
+      float rr = bl.z * (1.0 + lift * 0.35);
+      float d = distance(vWorldPos.xz, bl.xy);
+      if (d > rr || lift > bl.z * 8.0 + 2.0) continue;
+      float k = smoothstep(rr * 0.35, rr, d);
+      light = min(light, mix(0.3, 1.0, max(k, lift / (bl.z * 8.0 + 2.0))));
+    }
+  #endif
   light = max(light, uEmissive);
   vec3 c = inkShade(base, light, uShadeInk, vWorldPos, n);
 
@@ -201,6 +229,8 @@ export interface InkOpts {
   side?: THREE.Side;
   /** minimum light, for things that glow */
   emissive?: number;
+  /** receive creature contact shadows (ground surfaces) */
+  blobs?: boolean;
 }
 
 export function makeInkMaterial(o: InkOpts = {}): THREE.ShaderMaterial {
@@ -226,7 +256,7 @@ export function makeInkMaterial(o: InkOpts = {}): THREE.ShaderMaterial {
     fragmentShader: FRAG,
     lights: true,
     side: o.side ?? THREE.FrontSide,
-    defines: o.wind ? { WIND: 1 } : {},
+    defines: { ...(o.wind ? { WIND: 1 } : {}), ...(o.blobs ? { BLOBS: 1 } : {}) },
   });
   return mat;
 }
