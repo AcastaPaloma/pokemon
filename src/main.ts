@@ -6,6 +6,8 @@ import { Hud } from './ui/hud';
 import { TitleScreen } from './ui/title';
 import { Menu } from './ui/menu';
 import { Wheel } from './ui/wheel';
+import { rollIndividual } from './game/creature';
+import { SPECIES } from './data/species';
 
 installInkFilters();
 const canvas = document.getElementById('game') as HTMLCanvasElement;
@@ -87,14 +89,37 @@ const dbg = {
   game,
   menu,
   title,
-  /** skip the title and wake as a species */
-  async start(id = 'kagari') {
+  /** skip the title and wake as a species (scripted checks: also fakes pointer capture) */
+  async start(id = 'kagari', level = 5) {
+    await this.play(id, level);
+    this.lock();
+  },
+  /** skip the title and begin a fresh journey as any species; click the world to take the mouse */
+  async play(id = 'kagari', level = 5) {
+    if (!SPECIES[id]) throw new Error(`unknown species: ${id}`);
     booted = true;
     boot?.remove();
     document.getElementById('title')?.classList.remove('on');
+    document.getElementById('starter')?.classList.remove('on');
     game.overlay.rain = 0;
-    await game.newGame(id);
-    this.lock();
+    await game.newGame(id, level);
+    return SPECIES[id].name;
+  },
+  /** add a spirit to the pack mid-journey and step into it */
+  async give(id: string, level = 30) {
+    if (!SPECIES[id]) throw new Error(`unknown species: ${id}`);
+    if (game.mode !== 'play' || !game.active) return 'begin a journey first';
+    // make room: the last follower goes to wait at the sanctuary
+    if (game.pack.length >= 6) {
+      const last = [...game.pack].reverse().find((c) => c !== game.active);
+      if (last) game.dismiss(last);
+    }
+    const ind = rollIndividual(id, level);
+    ind.home = 'pack';
+    game.roster.push(ind);
+    if (!game.summon(ind)) return 'could not call it';
+    await game.switchTo(game.pack.length - 1);
+    return SPECIES[id].name;
   },
   /** behave as if the pointer were captured */
   lock(v = true) {

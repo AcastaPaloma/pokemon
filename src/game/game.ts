@@ -279,9 +279,9 @@ export class Game {
 
   // ---------------------------------------------------------------- starting and loading
 
-  async newGame(starterId: string) {
+  async newGame(starterId: string, level = 5) {
     this.clearWorld();
-    const ind = rollIndividual(starterId, 5);
+    const ind = rollIndividual(starterId, level);
     ind.home = 'pack';
     ind.shiny = false;
     const c = this.spawnPack(ind, SPAWN_POINT.x, SPAWN_POINT.z, Math.PI);
