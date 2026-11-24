@@ -20,11 +20,11 @@ interface WeatherLook {
 const LOOK: Record<WeatherId, WeatherLook> = {
   clear: { cover: 0.28, gloom: 0, haze: 0, wind: 0.4, wet: 0, snow: 0, rain: 0 },
   sunny: { cover: 0.08, gloom: 0, haze: 0.04, wind: 0.25, wet: 0, snow: 0, rain: 0 },
-  rain: { cover: 0.82, gloom: 0.6, haze: 0.35, wind: 0.65, wet: 1, snow: 0, rain: 0.7 },
-  storm: { cover: 1, gloom: 0.95, haze: 0.5, wind: 1.15, wet: 1, snow: 0, rain: 1 },
-  snow: { cover: 0.75, gloom: 0.35, haze: 0.55, wind: 0.45, wet: 0, snow: 1, rain: 0 },
-  fog: { cover: 0.55, gloom: 0.4, haze: 1, wind: 0.15, wet: 0.25, snow: 0, rain: 0 },
-  ashfall: { cover: 0.7, gloom: 0.55, haze: 0.6, wind: 0.35, wet: 0, snow: 0, rain: 0 },
+  rain: { cover: 0.82, gloom: 0.6, haze: 0.22, wind: 0.65, wet: 1, snow: 0, rain: 0.7 },
+  storm: { cover: 1, gloom: 0.95, haze: 0.32, wind: 1.15, wet: 1, snow: 0, rain: 1 },
+  snow: { cover: 0.75, gloom: 0.3, haze: 0.2, wind: 0.45, wet: 0, snow: 1, rain: 0 },
+  fog: { cover: 0.55, gloom: 0.4, haze: 0.85, wind: 0.15, wet: 0.25, snow: 0, rain: 0 },
+  ashfall: { cover: 0.7, gloom: 0.55, haze: 0.34, wind: 0.35, wet: 0, snow: 0, rain: 0 },
   gale: { cover: 0.5, gloom: 0.2, haze: 0.1, wind: 1.4, wet: 0, snow: 0, rain: 0 },
 };
 
