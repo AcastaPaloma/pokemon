@@ -10,13 +10,13 @@ function tuftGeometry(): THREE.BufferGeometry {
   // x: across the blade, y: 0 root … 1 tip, z: outward lean
   const pos: number[] = [];
   const idx: number[] = [];
-  const blades = 3;
+  const blades = 5;
   for (let b = 0; b < blades; b++) {
-    const a = (b / blades) * Math.PI * 2 + 0.4;
+    const a = (b / blades) * Math.PI * 2 + 0.4 + (b % 2) * 0.35;
     const ca = Math.cos(a);
     const sa = Math.sin(a);
-    const lean = 0.34 + b * 0.09;
-    const w = 0.085;
+    const lean = 0.2 + (b % 3) * 0.13;
+    const w = 0.042 + (b % 2) * 0.012;
     const base = pos.length / 3;
     const put = (x: number, y: number, out: number) => {
       // rotate the blade's local frame around Y
@@ -24,11 +24,12 @@ function tuftGeometry(): THREE.BufferGeometry {
       const lz = out;
       pos.push(lx * ca + lz * sa + sa * 0.05, y, -lx * sa + lz * ca + ca * 0.05);
     };
+    const tall = 0.72 + (b % 3) * 0.14;
     put(-w, 0, 0);
     put(w, 0, 0);
-    put(-w * 0.72, 0.55, lean * 0.45);
-    put(w * 0.72, 0.55, lean * 0.45);
-    put(0, 1, lean);
+    put(-w * 0.72, 0.55 * tall, lean * 0.45);
+    put(w * 0.72, 0.55 * tall, lean * 0.45);
+    put(0, tall, lean);
     idx.push(base, base + 1, base + 2, base + 1, base + 3, base + 2, base + 2, base + 3, base + 4);
   }
   const g = new THREE.BufferGeometry();
@@ -66,6 +67,8 @@ void main() {
   vec3 root = aA.xyz;
   float dist = distance(root.xz, cameraPosition.xz);
   float fade = 1.0 - smoothstep(uGrassFar * 0.62, uGrassFar, dist);
+  // blades right at the lens would wall off a small creature's view
+  fade *= smoothstep(0.35, 1.5, distance(root, cameraPosition));
   vec3 wp = root + vec3(lp.x * spread, lp.y * hgt * fade, lp.z * spread);
 
   float bend = p.y * p.y;

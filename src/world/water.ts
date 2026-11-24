@@ -65,7 +65,8 @@ void main() {
     if (auv.x < 0.0 || auv.x > 1.0 || auv.y < 0.0 || auv.y > 1.0) h = -16.0;
     depth = mix(8.0, -h, uHasAtlas);
   #else
-    depth = vData.x * vData.z;
+    // beds are bowls: depth climbs quickly away from the bank
+    depth = (1.0 - (1.0 - vData.x) * (1.0 - vData.x)) * vData.z;
   #endif
   float n = vnoise(xz * 0.22);
   float dist = distance(vWorldPos, cameraPosition);
@@ -79,7 +80,11 @@ void main() {
 
   // lapping edge + trailing foam lines
   float lapPhase = uTime * 1.2 + n * 5.0;
-  float edge = 1.0 - step(0.16 + 0.11 * sin(lapPhase), depth);
+  #ifdef SEA
+    float edge = 1.0 - step(0.16 + 0.11 * sin(lapPhase), depth);
+  #else
+    float edge = 1.0 - step(0.07 + 0.04 * sin(lapPhase), depth);
+  #endif
   float lines = step(0.72, sin(depth * 5.5 - uTime * 1.5 + n * 4.0)) * (1.0 - smoothstep(0.25, 1.9, depth));
   float foam = max(edge, lines * 0.85);
 
