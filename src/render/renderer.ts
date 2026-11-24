@@ -84,9 +84,12 @@ void main() {
   // bold outer silhouettes on nearby forms: a second, wider ring that only
   // answers to big depth breaks
   vec2 o2 = o * 2.4;
-  float ja = invZ(cuv - o2), jb = invZ(cuv + o2), jc = invZ(cuv + vec2(-o2.x, o2.y)), jd = invZ(cuv + vec2(o2.x, -o2.y));
+  vec2 qa = cuv - o2, qb = cuv + o2, qc = cuv + vec2(-o2.x, o2.y), qd = cuv + vec2(o2.x, -o2.y);
+  float ja = invZ(qa), jb = invZ(qb), jc = invZ(qc), jd = invZ(qd);
   float lap2 = max(abs(ja + jb - 2.0 * ic), abs(jc + jd - 2.0 * ic)) * zc;
-  edge = max(edge, smoothstep(0.09, 0.2, lap2) * w * near);
+  // un-outlined things (grass, spray) must not pick up a halo from the wide ring either
+  float w2 = min(w, min(min(texture2D(tNormal, qa).a, texture2D(tNormal, qb).a), min(texture2D(tNormal, qc).a, texture2D(tNormal, qd).a)));
+  edge = max(edge, smoothstep(0.09, 0.2, lap2) * w2 * near);
   // lines thin out and grey with distance
   edge *= mix(1.0, 0.28, smoothstep(160.0, 1100.0, zc));
 
