@@ -99,16 +99,19 @@ void main() {
   // underwater tint
   col = mix(col, col * vec3(0.55, 0.8, 0.9) + vec3(0.01, 0.06, 0.1), uUnder);
 
-  // ---- menu: the live world as a sumi-e wash, fading to bare paper on the left
+  // ---- menu: the live world as a sumi-e wash. Light and mid tones fall away
+  // to bare paper, darks stay as a few layered washes, the line work stays
+  // crisp, and the whole picture gives way to clean paper on the left.
   if (uMenu > 0.0) {
     float l = dot(col, vec3(0.3, 0.59, 0.11));
-    float wash = smoothstep(0.08, 0.9, l);
-    wash = floor(wash * 5.0 + vnoise(uv * uRes / (90.0 * uDpr)) * 0.9) / 5.0;
-    vec3 sumi = mix(uInk * 1.15, uPaper, clamp(wash, 0.0, 1.0));
-    float side = smoothstep(0.18, 0.78, uv.x + (vnoise(uv * vec2(3.0, 9.0) + 4.0) - 0.5) * 0.18);
-    float keep = side * (0.55 + 0.45 * uFocus);
-    vec3 m = mix(uPaper, sumi, keep);
-    col = mix(col, m, uMenu);
+    float n = vnoise(uv * uRes / (120.0 * uDpr));
+    float wash = smoothstep(0.1, 0.6, l + (n - 0.5) * 0.08);
+    wash = mix(wash, floor(wash * 4.0 + 0.5) / 4.0, 0.55);
+    vec3 sumi = mix(uInk * 1.25, uPaper, clamp(wash, 0.0, 1.0));
+    sumi = mix(sumi, uInk, edge * 0.85);
+    float side = smoothstep(0.44, 0.84, uv.x + (vnoise(uv * vec2(3.0, 9.0) + 4.0) - 0.5) * 0.2);
+    float keep = side * uFocus;
+    col = mix(col, mix(uPaper, sumi, keep), uMenu);
   }
 
   // ---- hurt: ink bleeding in from the corners

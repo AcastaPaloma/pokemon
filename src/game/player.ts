@@ -126,9 +126,9 @@ export class PlayerControl {
   }
 
   /** Place the camera behind the inhabited creature. */
-  updateCamera(c: Creature, dt: number, orbit = 0) {
+  updateCamera(c: Creature, dt: number, orbit = 0, closeUp = 1) {
     const H = c.height;
-    this.distTarget = clamp(1.7 + H * 3.3 + c.rig.length * 0.5, 1.9, 34) * this.zoom;
+    this.distTarget = clamp(1.7 + H * 3.3 + c.rig.length * 0.5, 1.9, 34) * (closeUp < 1 ? closeUp : this.zoom);
     this.dist = damp(this.dist, this.distTarget, 5, dt);
     if (orbit) this.yaw += orbit * dt;
     const speed = Math.hypot(c.vel.x, c.vel.z);

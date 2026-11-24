@@ -56,13 +56,13 @@ void main() {
   bool flower = type > 0.5 && type < 1.5;
   bool reed = type > 1.5;
   if (flower) {
-    if (p.y > 0.3 && p.y < 0.9) { p.y = 0.8; p.x *= 2.6; p.z *= 1.2; }
+    if (p.y > 0.3 && p.y < 0.9) { p.y = 0.82; p.x *= 1.5; p.z *= 1.1; }
     else if (p.y < 0.3) p.x *= 0.3;
   }
   if (reed) { p.x *= 0.55; p.z *= 0.35; }
   float c = cos(rot), s = sin(rot);
   vec3 lp = vec3(p.x * c + p.z * s, p.y, -p.x * s + p.z * c);
-  float spread = reed ? 0.5 : hgt * 1.25 + 0.2;
+  float spread = reed ? 0.5 : flower ? hgt * 0.7 + 0.1 : hgt * 1.25 + 0.2;
   vec3 root = aA.xyz;
   float dist = distance(root.xz, cameraPosition.xz);
   float fade = 1.0 - smoothstep(uGrassFar * 0.62, uGrassFar, dist);

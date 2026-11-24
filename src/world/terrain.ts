@@ -145,8 +145,9 @@ function natural(x: number, z: number, out: Nat): Nat {
   const land = landAt(x, z);
   out.land = land;
   // dominant region with a ragged border
-  const bx = x + 70 * noise2(x / 150 + 9.2, z / 150);
-  const bz = z + 70 * noise2(x / 150, z / 150 - 4.4);
+  // two scales of wander: long lobes that reach into the neighbouring region, then fine fraying
+  const bx = x + 260 * noise2(x / 880 + 9.2, z / 880) + 60 * noise2(x / 140 + 3.3, z / 140);
+  const bz = z + 260 * noise2(x / 880, z / 880 - 4.4) + 60 * noise2(x / 140, z / 140 - 8.1);
   let best = 0;
   let bestQ = 1e9;
   let wsum = 0.05;

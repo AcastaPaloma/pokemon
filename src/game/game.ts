@@ -122,6 +122,10 @@ export class Game {
   switching = false;
   /** roofed places for rain shelter, filled by the site builder */
   shelters: { x: number; z: number; r: number }[] = [];
+  /** creature the paused camera should frame (menu selection) */
+  menuFocus: Creature | null = null;
+  /** the radial pack wheel is up: the camera holds still */
+  wheelOpen = false;
   /** lantern lights near the camera this frame, filled by the site builder */
   lanterns: { x: number; y: number; z: number; r: number }[] = [];
   /** camera orbit target for title / starter scenes */
@@ -788,8 +792,8 @@ export class Game {
 
     // ---- input → inhabited body
     if (a && sim) {
-      this.control.drive(a, this.combat, this.creatures, dt, inp.locked && !this.switching && !a.fainted);
-      if (inp.locked && !this.switching) {
+      this.control.drive(a, this.combat, this.creatures, dt, inp.locked && !this.switching && !a.fainted && !this.wheelOpen);
+      if (inp.locked && !this.switching && !this.wheelOpen) {
         for (let i = 0; i < 6; i++) if (inp.hit(('pack' + (i + 1)) as 'pack1')) this.switchTo(i);
         if (inp.hit('interact')) this.interact();
         if (inp.hit('aura')) this.aura();
@@ -954,7 +958,12 @@ export class Game {
 
     // ---- camera
     if ((this.mode === 'play' || paused) && a) {
-      this.control.updateCamera(a, dt, paused ? 0.07 : 0);
+      const subject = paused && this.menuFocus && this.menuFocus.alive ? this.menuFocus : a;
+      if (subject !== this.camSubject) {
+        this.camSubject = subject;
+        if (paused) this.control.snapBehind(subject);
+      }
+      this.control.updateCamera(subject, dt, paused ? 0.07 : 0, paused ? 0.5 : 1);
     } else {
       const st = this.stage;
       st.yaw += dt * 0.05;
@@ -966,7 +975,7 @@ export class Game {
     }
     // the menu slides the subject to the right-hand side of the sheet
     this.menuK = damp(this.menuK, paused ? 1 : 0, 6, dt);
-    if (this.menuK > 0.002) cam.setViewOffset(R.width, R.height, -R.width * 0.2 * this.menuK, 0, R.width, R.height);
+    if (this.menuK > 0.002) cam.setViewOffset(R.width, R.height, -R.width * 0.25 * this.menuK, R.height * 0.04 * this.menuK, R.width, R.height);
     else if (cam.view && cam.view.enabled) cam.clearViewOffset();
 
     // ---- sky, weather, light
@@ -1043,6 +1052,7 @@ export class Game {
     inp.endFrame();
   }
   private stillness = 0;
+  private camSubject: Creature | null = null;
 
   /** Everyone in the pack is down: wake at the last sanctuary. */
   private async blackout() {
