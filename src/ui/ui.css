@@ -1,0 +1,1460 @@
+/* Sumirei interface: sumi ink on washi, one sakura accent, one vermilion seal.
+   Everything is brushed, stamped or ruled — no glass, no glow, no rounded cards. */
+
+:root {
+  --washi: #f4e9d6;
+  --washi-deep: #e6d6ba;
+  --sumi: #1d1a1a;
+  --sumi-soft: #4a4442;
+  --sumi-faint: rgba(29, 26, 26, 0.42);
+  --sakura: #f3a0b5;
+  --sakura-deep: #d9728f;
+  --vermilion: #c8553d;
+  --gold: #b98f35;
+  --latin: 'Optima', 'Cormorant Garamond', 'Palatino Linotype', 'Palatino', serif;
+  --kanji: 'Hiragino Mincho ProN', 'Yu Mincho', 'Songti SC', serif;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+#ui {
+  font-family: var(--latin);
+  color: var(--sumi);
+  letter-spacing: 0.04em;
+}
+#ui * {
+  box-sizing: border-box;
+}
+.layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+}
+.layer.on {
+  opacity: 1;
+}
+.layer.on.interactive {
+  pointer-events: auto;
+}
+.kanji {
+  font-family: var(--kanji);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.tate {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+}
+.caps {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+}
+.rough {
+  filter: url(#rough);
+}
+.rough-soft {
+  filter: url(#rough-soft);
+}
+
+/* ---- key caps: small ruled boxes, like printer's marks */
+.key {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 6px;
+  border: 1.5px solid currentColor;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* ---- hanko: the vermilion seal */
+.hanko {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background: var(--vermilion);
+  color: var(--washi);
+  font-family: var(--kanji);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  filter: url(#rough-soft);
+}
+
+/* ---- move seal: a diamond, inked */
+.seal {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.seal::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  background: var(--sumi);
+  transform: rotate(45deg);
+  filter: url(#rough-soft);
+}
+.seal > span {
+  position: relative;
+  font-family: var(--kanji);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--c, var(--washi));
+  line-height: 1;
+}
+.seal.dim::before {
+  background: transparent;
+  border: 1.5px solid var(--sumi-faint);
+}
+.seal.dim > span {
+  color: var(--sumi-faint);
+}
+
+/* ======================================================================== HUD */
+
+#hud .vital {
+  position: absolute;
+  left: 44px;
+  bottom: 40px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+#hud .vital .name-plate {
+  border: 1.5px solid var(--sumi);
+  background: var(--washi);
+  padding: 10px 6px;
+  font-size: 22px;
+  line-height: 1.05;
+  min-height: 84px;
+  display: grid;
+  place-items: center;
+  box-shadow: 4px 4px 0 -1.5px var(--washi), 4px 4px 0 0 var(--sumi);
+}
+#hud .vital .col {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-bottom: 2px;
+}
+#hud .vital .who {
+  font-size: 19px;
+  text-shadow: 0 0 6px var(--washi), 0 0 2px var(--washi);
+}
+#hud .vital .who small {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  margin-left: 10px;
+  opacity: 0.75;
+}
+.bar {
+  position: relative;
+  width: 230px;
+  height: 11px;
+}
+.bar i {
+  position: absolute;
+  inset: 0;
+  background: rgba(29, 26, 26, 0.16);
+  filter: url(#rough-soft);
+}
+.bar b {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--sumi);
+  filter: url(#rough-soft);
+  transition: width 0.25s var(--ease);
+}
+.bar.low b {
+  background: var(--vermilion);
+}
+.bar.thin {
+  height: 5px;
+}
+.bar.thin b {
+  background: var(--sakura-deep);
+}
+
+#hud .moves {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  margin-left: 8px;
+}
+#hud .mv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-shadow: 0 0 5px var(--washi), 0 0 2px var(--washi);
+  transition: opacity 0.2s;
+}
+#hud .mv.wait {
+  opacity: 0.38;
+}
+#hud .mv.armed .seal::before {
+  box-shadow: 0 0 0 2.5px var(--washi), 0 0 0 4.5px var(--vermilion);
+}
+
+/* the ink well: energy for charged moves */
+#hud .well {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+#hud .well svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+#hud .well .num {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--kanji);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--washi);
+  mix-blend-mode: difference;
+}
+
+/* pack roster down the left edge */
+#hud .packlist {
+  position: absolute;
+  left: 44px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#hud .pk {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  text-shadow: 0 0 5px var(--washi), 0 0 2px var(--washi);
+  opacity: 0.72;
+  transition: opacity 0.2s, transform 0.2s var(--ease);
+}
+#hud .pk.active {
+  opacity: 1;
+  transform: translateX(6px);
+}
+#hud .pk.down {
+  opacity: 0.3;
+}
+#hud .pk .hanko {
+  width: 26px;
+  height: 26px;
+  font-size: 14px;
+  background: var(--sumi);
+}
+#hud .pk.active .hanko {
+  background: var(--vermilion);
+}
+#hud .pk .n {
+  font-size: 10px;
+  width: 9px;
+  opacity: 0.7;
+}
+#hud .pk .hp {
+  width: 44px;
+  height: 3px;
+  background: rgba(29, 26, 26, 0.2);
+  margin-top: 3px;
+}
+#hud .pk .hp b {
+  display: block;
+  height: 100%;
+  background: var(--sumi);
+}
+
+/* compass */
+#hud .compass {
+  position: absolute;
+  top: 36px;
+  left: 50%;
+  width: 420px;
+  height: 34px;
+  transform: translateX(-50%);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+  text-shadow: 0 0 5px var(--washi), 0 0 2px var(--washi);
+}
+#hud .compass .tick {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 12px;
+  text-align: center;
+  white-space: nowrap;
+}
+#hud .compass .tick::after {
+  content: '';
+  display: block;
+  width: 1.5px;
+  height: 7px;
+  margin: 3px auto 0;
+  background: var(--sumi);
+}
+#hud .compass .tick.minor {
+  opacity: 0.45;
+  font-size: 0;
+}
+#hud .compass .tick.mark {
+  color: var(--vermilion);
+  font-family: var(--kanji);
+  font-weight: 700;
+}
+#hud .compass .tick.mark::after {
+  background: var(--vermilion);
+}
+#hud .needle {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top: 7px solid var(--sumi);
+}
+#hud .where {
+  position: absolute;
+  top: 82px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  white-space: nowrap;
+  text-shadow: 0 0 5px var(--washi), 0 0 2px var(--washi);
+}
+
+/* sky block: day, hour, weather */
+#hud .skyblock {
+  position: absolute;
+  top: 36px;
+  right: 46px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  text-shadow: 0 0 5px var(--washi), 0 0 2px var(--washi);
+}
+#hud .skyblock .big {
+  font-size: 30px;
+  line-height: 1;
+}
+#hud .skyblock .meta {
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: right;
+}
+#hud .skyblock .boost {
+  font-family: var(--kanji);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+/* reticle + target */
+#hud .reticle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  transform: translate(-50%, -50%);
+}
+#hud .reticle::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px;
+  background: var(--sumi);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px var(--washi);
+}
+#hud .reticle i {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--sumi);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(1.5) rotate(0deg);
+  transition: opacity 0.15s, transform 0.25s var(--ease);
+}
+#hud .reticle.locked i {
+  opacity: 1;
+  transform: scale(1) rotate(90deg);
+}
+#hud .reticle.hostile i {
+  border-top-color: var(--vermilion);
+  border-bottom-color: var(--vermilion);
+}
+#hud .target {
+  position: absolute;
+  left: 50%;
+  top: 118px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  text-shadow: 0 0 5px var(--washi), 0 0 2px var(--washi);
+  transition: opacity 0.2s;
+}
+#hud .target small {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  opacity: 0.8;
+}
+#hud .target .bar {
+  width: 190px;
+  height: 8px;
+}
+
+/* prompt on a brush banner */
+.banner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 26px 9px 18px;
+  color: var(--washi);
+  font-size: 14px;
+  white-space: nowrap;
+}
+.banner::before {
+  content: '';
+  position: absolute;
+  inset: 0 -6px;
+  background: var(--sumi);
+  clip-path: polygon(0 12%, 4% 0, 97% 6%, 100% 30%, 98% 62%, 100% 92%, 94% 100%, 3% 94%, 0 70%, 1.5% 40%);
+  filter: url(#rough);
+}
+.banner > * {
+  position: relative;
+}
+.banner em {
+  font-style: normal;
+  color: var(--sakura);
+}
+#hud .prompt {
+  position: absolute;
+  left: 50%;
+  bottom: 150px;
+  transform: translateX(-50%);
+  transition: opacity 0.2s;
+}
+
+/* toasts: paper slips with a seal */
+#hud .toasts {
+  position: absolute;
+  right: 46px;
+  top: 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--washi);
+  border: 1.5px solid var(--sumi);
+  padding: 7px 14px 7px 8px;
+  font-size: 13.5px;
+  box-shadow: 3px 3px 0 -1.5px var(--washi), 3px 3px 0 0 var(--sumi);
+  animation: slip 0.45s var(--ease) both;
+}
+.toast.out {
+  animation: slipout 0.4s var(--ease) both;
+}
+.toast .hanko {
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+}
+.toast.warn .hanko {
+  background: var(--sumi);
+}
+@keyframes slip {
+  from {
+    opacity: 0;
+    transform: translateX(26px) rotate(1.5deg);
+  }
+}
+@keyframes slipout {
+  to {
+    opacity: 0;
+    transform: translateX(26px);
+  }
+}
+
+/* region banner */
+#hud .region {
+  position: absolute;
+  left: 110px;
+  top: 16%;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  opacity: 0;
+  pointer-events: none;
+}
+#hud .region.show {
+  animation: region 5.2s var(--ease) both;
+}
+#hud .region .k {
+  font-size: 62px;
+  line-height: 1.02;
+  text-shadow: 0 0 10px var(--washi), 0 0 3px var(--washi);
+}
+#hud .region .t {
+  margin-top: 6px;
+  font-size: 13px;
+  border-left: 1.5px solid var(--sumi);
+  padding-left: 12px;
+  max-width: 250px;
+  line-height: 1.5;
+  text-shadow: 0 0 6px var(--washi), 0 0 2px var(--washi);
+}
+#hud .region .t b {
+  display: block;
+  font-size: 21px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  margin-bottom: 4px;
+}
+@keyframes region {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  12%,
+  78% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* damage numbers: brushed, drifting up */
+.float {
+  position: absolute;
+  font-family: var(--kanji);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--sumi);
+  text-shadow: 0 0 3px var(--washi), 0 0 6px var(--washi), 1px 1px 0 var(--washi);
+  transform: translate(-50%, -50%);
+  animation: floatup 0.9s var(--ease) both;
+  white-space: nowrap;
+}
+.float.strong {
+  color: var(--vermilion);
+  font-size: 30px;
+}
+.float.weak {
+  color: var(--sumi-soft);
+  font-size: 16px;
+}
+.float.crit {
+  font-size: 30px;
+}
+.float.block,
+.float.miss {
+  font-family: var(--latin);
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+@keyframes floatup {
+  0% {
+    opacity: 0;
+    margin-top: 10px;
+    scale: 1.6;
+  }
+  18% {
+    opacity: 1;
+    scale: 1;
+  }
+  100% {
+    opacity: 0;
+    margin-top: -46px;
+  }
+}
+
+#hud .hints {
+  position: absolute;
+  right: 46px;
+  bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  align-items: flex-end;
+  font-size: 11px;
+  text-shadow: 0 0 5px var(--washi), 0 0 2px var(--washi);
+}
+#hud .hints div {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+#hud .lockhint {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translateX(-50%);
+}
+
+/* ======================================================================== TITLE */
+
+#title {
+  background: linear-gradient(90deg, rgba(244, 233, 214, 0.9) 0%, rgba(244, 233, 214, 0.55) 38%, rgba(244, 233, 214, 0) 62%);
+}
+#title .panel {
+  position: absolute;
+  right: 9%;
+  top: 9%;
+  bottom: 9%;
+  width: 190px;
+  border: 2px solid var(--sumi);
+  background: rgba(244, 233, 214, 0.86);
+  display: grid;
+  place-items: center;
+  box-shadow: -10px 10px 0 -2px rgba(244, 233, 214, 0.86), -10px 10px 0 0 var(--sumi);
+}
+#title .panel .mark {
+  font-size: min(15vh, 150px);
+  line-height: 1.04;
+}
+#title .panel .hanko {
+  position: absolute;
+  bottom: 22px;
+  left: 22px;
+  width: 44px;
+  height: 44px;
+  font-size: 22px;
+}
+#title .panel .cap {
+  position: absolute;
+  top: 20px;
+  left: 14px;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+}
+#title .head {
+  position: absolute;
+  left: 9%;
+  top: 16%;
+}
+#title h1 {
+  margin: 0;
+  font-weight: 400;
+  font-size: min(8.4vw, 104px);
+  letter-spacing: 0.3em;
+  line-height: 1;
+}
+#title .sub {
+  margin-top: 18px;
+  font-size: 14px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+}
+#title .rule {
+  width: 300px;
+  height: 5px;
+  background: var(--sumi);
+  margin-top: 22px;
+  clip-path: polygon(0 30%, 6% 0, 92% 20%, 100% 60%, 90% 100%, 4% 80%);
+  filter: url(#rough);
+}
+#title .choices {
+  position: absolute;
+  left: 9%;
+  bottom: 16%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+#title .foot {
+  position: absolute;
+  left: 9%;
+  bottom: 6%;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  opacity: 0.7;
+}
+
+/* the brushed list used by title and menu */
+.inklist {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.inkitem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 44px 9px 18px;
+  font-size: 27px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--sumi);
+  transition: color 0.18s, padding-left 0.25s var(--ease);
+  white-space: nowrap;
+}
+.inkitem::before {
+  content: '';
+  position: absolute;
+  left: -30px;
+  right: -10px;
+  top: 2px;
+  bottom: 2px;
+  background: var(--sumi);
+  /* a loaded stroke: square where the brush lands, fraying where it lifts */
+  clip-path: polygon(0 22%, 3% 4%, 62% 0, 80% 9%, 91% 4%, 100% 34%, 95% 52%, 100% 70%, 88% 86%, 93% 100%, 70% 92%, 20% 100%, 2% 90%, 0 60%);
+  filter: url(#rough);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.32s var(--ease);
+}
+.inkitem.sel {
+  color: var(--washi);
+  padding-left: 58px;
+}
+.inkitem.sel::before {
+  transform: scaleX(1);
+}
+.inkitem > * {
+  position: relative;
+}
+.inkitem .hanko {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  margin-top: -15px;
+  opacity: 0;
+  transform: scale(1.6) rotate(-14deg);
+  transition: opacity 0.2s 0.1s, transform 0.3s 0.1s var(--ease);
+}
+.inkitem.sel .hanko {
+  opacity: 1;
+  transform: none;
+}
+.inkitem small {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  opacity: 0.7;
+  margin-left: 4px;
+}
+.inkitem.off {
+  opacity: 0.35;
+  cursor: default;
+}
+.inklist.compact .inkitem {
+  font-size: 19px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.inklist .divider {
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin: 16px 0 6px 18px;
+}
+
+/* ======================================================================== STARTER */
+
+#starter .card {
+  position: absolute;
+  left: 8%;
+  bottom: 11%;
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+  max-width: 560px;
+}
+#starter .card .k {
+  font-size: 74px;
+  line-height: 1.02;
+  border: 2px solid var(--sumi);
+  background: var(--washi);
+  padding: 14px 8px;
+  box-shadow: 6px 6px 0 -2px var(--washi), 6px 6px 0 0 var(--sumi);
+}
+#starter .card h2 {
+  margin: 4px 0 2px;
+  font-size: 44px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px var(--washi), 0 0 3px var(--washi);
+}
+#starter .card .ttl {
+  font-size: 13px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px var(--washi), 0 0 2px var(--washi);
+}
+#starter .card p {
+  font-size: 15.5px;
+  line-height: 1.6;
+  margin: 14px 0 12px;
+  background: rgba(244, 233, 214, 0.82);
+  padding: 10px 14px;
+  border-left: 2px solid var(--sumi);
+  max-width: 400px;
+}
+#starter .card .els {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+#starter .head {
+  position: absolute;
+  left: 8%;
+  top: 11%;
+  font-size: 13px;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px var(--washi), 0 0 2px var(--washi);
+}
+#starter .head b {
+  display: block;
+  font-size: 34px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  margin-top: 8px;
+}
+#starter .pips {
+  position: absolute;
+  left: 50%;
+  bottom: 7%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  pointer-events: auto;
+}
+#starter .pips .seal {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s, transform 0.25s var(--ease);
+}
+#starter .pips .seal.sel {
+  opacity: 1;
+  transform: scale(1.28);
+}
+#starter .go {
+  position: absolute;
+  right: 8%;
+  bottom: 11%;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* ======================================================================== MENU */
+
+#menu .tabs {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 38px;
+}
+#menu .tab {
+  position: relative;
+  padding: 6px 4px 12px;
+  font-size: 17px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sumi-faint);
+  cursor: pointer;
+  transition: color 0.2s;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+#menu .tab .kanji {
+  font-size: 15px;
+}
+#menu .tab::after {
+  content: '';
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  bottom: 0;
+  height: 5px;
+  background: var(--sumi);
+  clip-path: polygon(0 40%, 8% 0, 90% 15%, 100% 55%, 93% 100%, 5% 85%);
+  filter: url(#rough);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s var(--ease);
+}
+#menu .tab.sel {
+  color: var(--sumi);
+}
+#menu .tab.sel::after {
+  transform: scaleX(1);
+}
+#menu .purse {
+  position: absolute;
+  top: 46px;
+  left: 54px;
+  display: flex;
+  gap: 22px;
+  font-size: 15px;
+  align-items: center;
+}
+#menu .purse span {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+#menu .purse .hanko {
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+}
+#menu .side {
+  position: absolute;
+  left: 76px;
+  top: 21%;
+  bottom: 17%;
+  width: 330px;
+  overflow: hidden auto;
+  scrollbar-width: none;
+  padding-left: 34px;
+  margin-left: -34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+#menu .side.top {
+  justify-content: flex-start;
+}
+#menu .side::-webkit-scrollbar {
+  display: none;
+}
+#menu .main {
+  position: absolute;
+  left: 440px;
+  top: 19%;
+  bottom: 15%;
+  width: min(46vw, 620px);
+  overflow: hidden auto;
+  scrollbar-width: none;
+}
+#menu .main.wide {
+  width: min(64vw, 900px);
+}
+#menu .main::-webkit-scrollbar {
+  display: none;
+}
+#menu .hint {
+  position: absolute;
+  left: 40px;
+  bottom: 42px;
+}
+#menu .keys {
+  position: absolute;
+  right: 54px;
+  bottom: 46px;
+  display: flex;
+  gap: 26px;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+#menu .keys span {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+#menu .caption {
+  position: absolute;
+  right: 60px;
+  top: 21%;
+  font-size: 46px;
+  line-height: 1.06;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 10px;
+  align-items: flex-start;
+}
+#menu .caption small {
+  font-family: var(--latin);
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  font-weight: 400;
+  text-orientation: mixed;
+  text-transform: uppercase;
+  padding-top: 4px;
+}
+
+/* content blocks */
+.sheet h2 {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+.sheet .ttl {
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  margin-top: 6px;
+  opacity: 0.8;
+}
+.sheet .row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.sheet .lore {
+  font-size: 15.5px;
+  line-height: 1.65;
+  margin: 18px 0 0;
+  max-width: 480px;
+  border-left: 2px solid var(--sumi);
+  padding-left: 14px;
+}
+.sheet h3 {
+  font-size: 11.5px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-weight: 400;
+  margin: 26px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sheet h3::after {
+  content: '';
+  flex: 1;
+  height: 1.5px;
+  background: var(--sumi);
+  opacity: 0.35;
+  max-width: 320px;
+}
+.el {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.el .hanko {
+  width: 24px;
+  height: 24px;
+  font-size: 13px;
+  background: var(--c, var(--sumi));
+}
+.stats {
+  display: grid;
+  grid-template-columns: 70px 180px 44px;
+  gap: 7px 12px;
+  align-items: center;
+  font-size: 11.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.stats .bar {
+  width: 180px;
+  height: 7px;
+}
+.stats .v {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+/* move tree: fast move above, charged moves branching beneath */
+.tree {
+  position: relative;
+  display: flex;
+  gap: 54px;
+  margin-top: 6px;
+}
+.tree .col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 120px;
+}
+.tree .col > b {
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+.tree .node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.tree .node .seal {
+  width: 54px;
+  height: 54px;
+  transition: transform 0.2s var(--ease);
+}
+.tree .node:hover .seal {
+  transform: scale(1.1);
+}
+.tree .node .seal > span {
+  font-size: 19px;
+}
+.tree .node em {
+  font-style: normal;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+.tree .node small {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+.tree .stem {
+  width: 1.5px;
+  height: 16px;
+  background: var(--sumi);
+  opacity: 0.6;
+}
+.tree .alts {
+  display: flex;
+  gap: 2px;
+}
+.tree .alts .node .seal {
+  width: 40px;
+  height: 40px;
+}
+.tree .alts .node .seal > span {
+  font-size: 14px;
+}
+.tree .alts .node em {
+  font-size: 10.5px;
+}
+.movenote {
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.55;
+  min-height: 44px;
+  max-width: 470px;
+}
+.movenote b {
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+.btn {
+  position: relative;
+  padding: 9px 20px;
+  font-family: var(--latin);
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--sumi);
+  background: none;
+  border: 1.5px solid var(--sumi);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+.btn:hover,
+.btn.sel {
+  background: var(--sumi);
+  color: var(--washi);
+}
+.btn.off {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* bestiary grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 62px);
+  gap: 6px 10px;
+}
+.grid .cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+.grid .cell .seal {
+  width: 56px;
+  height: 56px;
+}
+.grid .cell .seal > span {
+  font-size: 18px;
+}
+.grid .cell.seen .seal::before {
+  background: rgba(29, 26, 26, 0.3);
+}
+.grid .cell.sel .seal::before {
+  box-shadow: 0 0 0 2.5px var(--washi), 0 0 0 4.5px var(--vermilion);
+}
+.split {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 34px;
+  align-items: start;
+}
+
+/* map */
+.mapwrap {
+  position: relative;
+  border: 2px solid var(--sumi);
+  background: var(--washi);
+  box-shadow: 8px 8px 0 -2px var(--washi), 8px 8px 0 0 var(--sumi);
+  width: min(62vh, 560px);
+  aspect-ratio: 1;
+}
+.mapwrap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.maplegend {
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* seals */
+.sealrow {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1.5px solid rgba(29, 26, 26, 0.14);
+  font-size: 14.5px;
+}
+.sealrow .hanko {
+  width: 34px;
+  height: 34px;
+  font-size: 17px;
+}
+.sealrow.lost .hanko {
+  background: none;
+  border: 1.5px dashed var(--sumi-faint);
+  color: var(--sumi-faint);
+}
+.sealrow small {
+  display: block;
+  font-size: 12px;
+  opacity: 0.72;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+/* settings */
+.setrow {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.setrow .opts {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.setrow input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 220px;
+  height: 3px;
+  background: var(--sumi);
+  outline: none;
+}
+.setrow input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  background: var(--vermilion);
+  transform: rotate(45deg);
+  cursor: pointer;
+}
+.chart {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 30px;
+  font-size: 13px;
+}
+.chart div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.chart .hanko {
+  width: 24px;
+  height: 24px;
+  font-size: 13px;
+  flex: none;
+}
+.kv {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 7px 16px;
+  font-size: 14px;
+}
+.kv dt {
+  font-size: 11.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  align-self: center;
+}
+.kv dd {
+  margin: 0;
+}
+
+/* ======================================================================== WHEEL */
+
+#wheel .enso {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 420px;
+  height: 420px;
+  margin: -210px;
+}
+#wheel .slot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150px;
+  margin-left: -75px;
+  margin-top: -34px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  text-shadow: 0 0 6px var(--washi), 0 0 2px var(--washi);
+  transition: scale 0.18s var(--ease), opacity 0.18s;
+  opacity: 0.6;
+}
+#wheel .slot.sel {
+  scale: 1.22;
+  opacity: 1;
+}
+#wheel .slot.down {
+  opacity: 0.25;
+}
+#wheel .slot .seal {
+  width: 58px;
+  height: 58px;
+}
+#wheel .slot .seal > span {
+  font-size: 21px;
+}
+#wheel .slot.sel .seal::before {
+  background: var(--vermilion);
+}
+#wheel .mid {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px var(--washi), 0 0 2px var(--washi);
+}
+#wheel .mid b {
+  display: block;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  margin-top: 4px;
+}
+
+@media (max-width: 1100px) {
+  #menu .main {
+    left: 360px;
+  }
+  #menu .side {
+    width: 280px;
+    left: 54px;
+  }
+  .inkitem {
+    font-size: 22px;
+  }
+  #menu .tabs {
+    gap: 22px;
+  }
+  #menu .tab {
+    font-size: 14px;
+  }
+  #menu .caption {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .inkitem::before,
+  .tab::after,
+  .toast,
+  .float {
+    transition: none;
+    animation-duration: 0.01s;
+  }
+}
