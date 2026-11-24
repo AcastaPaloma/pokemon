@@ -1,7 +1,31 @@
 import type { SpeciesDef } from '../types';
 import { STARTERS } from './starters';
+import { VALE } from './vale';
+import { BAMBOO } from './bamboo';
+import { DEEPWOOD } from './deepwood';
+import { PLAINS } from './plains';
+import { VOLCANIC } from './volcanic';
+import { SNOW } from './snow';
+import { MARSH } from './marsh';
+import { COAST } from './coast';
+import { HIGHLAND } from './highland';
+import { ISLE } from './isle';
+import { MYTHIC } from './mythic';
 
-const ALL: SpeciesDef[] = [...STARTERS];
+const ALL: SpeciesDef[] = [
+  ...STARTERS,
+  ...VALE,
+  ...BAMBOO,
+  ...DEEPWOOD,
+  ...PLAINS,
+  ...VOLCANIC,
+  ...SNOW,
+  ...MARSH,
+  ...COAST,
+  ...HIGHLAND,
+  ...ISLE,
+  ...MYTHIC,
+];
 
 export const SPECIES: Record<string, SpeciesDef> = Object.fromEntries(ALL.map((s) => [s.id, s]));
 export const SPECIES_LIST = ALL;
