@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="color-scheme" content="light" />
+    <title>墨霊 Sumirei — Spirits of the Ink Dawn</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #f4e9d6;
+        color: #1d1a1a;
+        font-family: 'Optima', 'Palatino', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+        -webkit-font-smoothing: antialiased;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      #game,
+      #ink {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      #ink {
+        pointer-events: none;
+        z-index: 20;
+      }
+      #ui {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        pointer-events: none;
+      }
+      /* first paint, before any script has run */
+      #boot {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        display: grid;
+        place-items: center;
+        background: #f4e9d6;
+        transition: opacity 0.9s ease;
+      }
+      #boot .mark {
+        writing-mode: vertical-rl;
+        font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+        font-size: min(16vh, 150px);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        line-height: 1;
+      }
+      #boot .sub {
+        position: absolute;
+        bottom: 9vh;
+        letter-spacing: 0.5em;
+        font-size: 12px;
+        text-transform: uppercase;
+        opacity: 0.6;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+    <canvas id="ink"></canvas>
+    <div id="ui"></div>
+    <div id="boot">
+      <div class="mark">墨霊</div>
+      <div class="sub" id="boot-sub">grinding the ink</div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
