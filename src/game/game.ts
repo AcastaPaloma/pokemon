@@ -11,6 +11,7 @@ import { ChunkManager, Flora } from '../world/chunks';
 import { CollisionWorld } from '../world/colliders';
 import { Water } from '../world/water';
 import { Weather } from '../world/weather';
+import { Sites } from '../world/sites';
 import { addGust, updatePressers, windUniforms } from '../world/wind';
 import { BIOMES, groundAt, makeSample, regionAt, sampleTerrain } from '../world/terrain';
 import { ALTARS, SITES, SPAWN_POINT, STONES, type AltarDef, type SiteDef } from '../data/world';
@@ -40,6 +41,7 @@ export interface AudioPort {
   unlock(): Promise<void>;
   setVolume(master: number, music: number, sfx: number): void;
   update(frame: unknown): void;
+  setAnchors?(anchors: { kind: string; x: number; y: number; z: number }[]): void;
   footstep(surface: string, weightKg: number, wet: number, speed: number, pos?: P3): void;
   cry(seed: number, sizeMeters: number, mood: string, pos?: P3): void;
   moveFx(fx: string, phase: 'cast' | 'hit', power: number, pos?: P3): void;
@@ -80,6 +82,7 @@ export class Game {
   readonly chunks: ChunkManager;
   readonly water = new Water();
   readonly weather = new Weather();
+  readonly sites: Sites;
   readonly fx = new Fx();
   readonly combat: Combat;
   readonly spawner = new Spawner();
@@ -144,12 +147,13 @@ export class Game {
   constructor(canvas: HTMLCanvasElement, inkCanvas: HTMLCanvasElement) {
     this.R = new InkRenderer(canvas);
     this.chunks = new ChunkManager(this.collision);
+    this.sites = new Sites(this.collision);
     this.input = new Input(canvas);
     this.control = new PlayerControl(this.R.camera, this.input);
     this.overlay = new InkOverlay(inkCanvas);
     this.combat = new Combat(() => this.creatures, this.fx, this.collision);
     const sc = this.R.scene;
-    sc.add(this.sky.mesh, this.chunks.group, this.water.group, this.weather.group, this.fx.group);
+    sc.add(this.sky.mesh, this.chunks.group, this.water.group, this.sites.group, this.weather.group, this.fx.group);
     this.chunks.onAtlas = (a) => {
       this.water.setAtlas(a);
       this.emit('atlas', a);
@@ -1014,6 +1018,18 @@ export class Game {
     for (let i = gi; i < glows.length; i++) glows[i].w = 0;
 
     // ---- world streaming and effects
+    this.sites.update(dt, cam.position);
+    this.anchorT -= dt;
+    if (this.anchorT <= 0) {
+      this.anchorT = 0.5;
+      const cx = cam.position.x;
+      const cz = cam.position.z;
+      this.shelters.length = 0;
+      for (const a of this.sites.anchorsNear(cx, cz, 180, ['shelter'], 24)) this.shelters.push({ x: a.x, z: a.z, r: a.r });
+      this.lanterns.length = 0;
+      for (const a of this.sites.anchorsNear(cx, cz, 70, ['lantern', 'fire'], 4)) this.lanterns.push({ x: a.x, y: a.y, z: a.z, r: a.kind === 'fire' ? 9 : 6.5 });
+      this.audio?.setAnchors?.(this.sites.anchorsNear(cx, cz, 90, ['chime', 'fountain', 'fire', 'bell'], 24).map((a) => ({ kind: a.kind, x: a.x, y: a.y, z: a.z })));
+    }
     this.chunks.update(cam.position);
     this.water.update(cam.position);
     updatePressers(dt, cam.position.x, cam.position.z);
@@ -1052,6 +1068,7 @@ export class Game {
     inp.endFrame();
   }
   private stillness = 0;
+  private anchorT = 0;
   private camSubject: Creature | null = null;
 
   /** Everyone in the pack is down: wake at the last sanctuary. */
